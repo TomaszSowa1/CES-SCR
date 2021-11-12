@@ -17,6 +17,7 @@ namespace CES
     {
         private DataTable dt;
         private BindingSource bs;
+        double sum = 0;
         //GanttChart ganttChart1;
         public Form1()
         {
@@ -40,13 +41,13 @@ namespace CES
             
             DataTable results = (DataTable)bs.DataSource;
             List<int> t = new List<int>();
-            double sum = 0;
+            sum = 0;
             for (int i = 0; i < results.Rows.Count; i++) {
                 t.Add(Int32.Parse(results.Rows[i][1].ToString()));
                 sum += (double)Int32.Parse(results.Rows[i][2].ToString()) / (double)Int32.Parse(results.Rows[i][1].ToString());
             }
 
-            MessageBox.Show("sum:"+sum+"\nnww:"+ LCM(t));
+            //MessageBox.Show("sum:"+sum+"\nnww:"+ LCM(t));
 
             if (sum > 1)
             {
@@ -86,38 +87,28 @@ namespace CES
             if (f > 0|| afterslicing)
             {
                 int f_count = H / f;
-                MessageBox.Show("H:" + H + "\nf:" + f + "\nf_count" + f_count + "\n");
+                //MessageBox.Show("H:" + H + "\nf:" + f + "\nf_count" + f_count + "\n");
                 //chart1.ChartAreas[0].AxisY.IsStartedFromZero = false;
                 chart1.Legends.Clear();
                 chart1.Legends.Add("Timespans");
                 chart1.Legends[0].LegendStyle = LegendStyle.Table;
                 chart1.Legends[0].Docking = Docking.Bottom;
                 chart1.Legends[0].Alignment = StringAlignment.Center;
-                chart1.Legends[0].Title = "Timespans";
+                chart1.Legends[0].Title = "Zadania";
                 chart1.Legends[0].BorderColor = Color.Black;
-                //chart1.ChartAreas[0].AxisY.ScaleView.Size = 25;
-                chart1.ChartAreas[0].AxisX.LabelStyle.Format ="";
-                chart1.ChartAreas[0].AxisX.Crossing = 25;
-                chart1.ChartAreas[0].AxisX.MajorGrid.LineColor = Color.White;
-                chart1.ChartAreas[0].BackColor = Color.White;
-                chart1.ChartAreas[0].AxisX.Interval = 1;
-                chart1.ChartAreas[0].AxisX.MinorGrid.LineColor = Color.White;
-                
                 chart1.Series.Clear();
                 ///
-                chart1.ChartAreas[0].AxisY.Minimum = 0;
-                chart1.ChartAreas[0].AxisY.Maximum = H;
-                //chart1.ChartAreas[0].AxisY.Interval= (int)(H / f_count);
-                //chart1.ChartAreas[0].AxisY.IntervalType = DateTimeIntervalType.Number;
-                //chart1.ChartAreas[0].AxisY.MajorGrid.Interval = (int)(H / f_count);
-                //chart1.ChartAreas[0].AxisY.MajorGrid.IntervalType = DateTimeIntervalType.Number;
-                //chart1.ChartAreas[0].AxisY.MinorGrid.Interval = (int)(H / f_count);
-                //chart1.ChartAreas[0].AxisY.MinorGrid.IntervalType = DateTimeIntervalType.Number;
-                //chart1.ChartAreas[0].AxisY.LabelStyle.Interval = (int)(H / f_count);
-                //chart1.ChartAreas[0].AxisY.LabelStyle.IntervalType = DateTimeIntervalType.Number;
-                ////chart1.ChartAreas[0].AxisY.IntervalType = DateTimeIntervalType.Milliseconds;
-                //chart1.ChartAreas[0].RecalculateAxesScale();
-                chart1.ChartAreas[0].AxisX.Interval = 1;
+                chart1.ChartAreas[0].AxisY2.Minimum = 0;
+                chart1.ChartAreas[0].AxisY2.Maximum = H;
+                chart1.ChartAreas[0].AxisY2.Interval = (double)(H / f_count);
+                chart1.ChartAreas[0].AxisY2.IntervalType = DateTimeIntervalType.Number;
+                chart1.ChartAreas[0].AxisY2.MajorGrid.Interval = (double)(H / f_count);
+                chart1.ChartAreas[0].AxisY2.MajorGrid.IntervalType = DateTimeIntervalType.Number;
+                chart1.ChartAreas[0].AxisY2.MinorGrid.Interval = (double)(H / f_count);
+                chart1.ChartAreas[0].AxisY2.MinorGrid.IntervalType = DateTimeIntervalType.Number;
+                chart1.ChartAreas[0].AxisY2.LabelStyle.Interval = (double)(H / f_count);
+                chart1.ChartAreas[0].AxisY2.LabelStyle.IntervalType = DateTimeIntervalType.Number;
+                chart1.ChartAreas[0].AxisY.Interval = 1;
                 string seriesname;
                 List<int> timeline = new List<int>();
                 List<int> timeline2 = new List<int>();
@@ -125,6 +116,9 @@ namespace CES
                     timeline.Add(i*H/f_count);
                     timeline2.Add(i * H / f_count);
                 }
+                label1.Text = "U = "+sum.ToString();
+                label2.Text = "ilosc okresow = " + f_count.ToString();
+                label3.Text = "deadline dla jednego okresu = " + (H / f_count).ToString();
                 
                 foreach (task mytask in tasks) {
                     int count = H/mytask.d;
@@ -138,6 +132,7 @@ namespace CES
                     chart1.Series[seriesname].ToolTip = seriesname;
                     chart1.Series[seriesname].YValueType = ChartValueType.Int32;
                     chart1.Series[seriesname].YAxisType = AxisType.Secondary;
+                    
                     bool mystop=true;
                     int newmin=0, newmax=(f_count/count)-1;
                     List<double> xValues = new List<double>();
