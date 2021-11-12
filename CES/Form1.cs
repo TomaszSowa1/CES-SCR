@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
+
 
 namespace CES
 {
@@ -15,6 +17,7 @@ namespace CES
     {
         private DataTable dt;
         private BindingSource bs;
+        //GanttChart ganttChart1;
         public Form1()
         {
             InitializeComponent();
@@ -57,72 +60,129 @@ namespace CES
         }
         void do_graph_thingy() {
             DataTable results = (DataTable)bs.DataSource;
-            List<int> p = new List<int>();
-            List<int> d = new List<int>();
-            List<int> t = new List<int>();
+            //List<int> p = new List<int>();
+            //List<int> d = new List<int>();
+            //List<int> t = new List<int>();
+            List<task> tasks = new List<task>();
             double sum = 0;
             for (int i = 0; i < results.Rows.Count; i++)
             {
-                p.Add(Int32.Parse(results.Rows[i][2].ToString()));
-                t.Add(Int32.Parse(results.Rows[i][1].ToString()));
-                d.Add(Int32.Parse(results.Rows[i][3].ToString()));
+                task mytask = new task { name = results.Rows[i][0].ToString(), p = Int32.Parse(results.Rows[i][2].ToString()), d = Int32.Parse(results.Rows[i][3].ToString()), t = Int32.Parse(results.Rows[i][1].ToString()) };
+                tasks.Add(mytask);
                 sum += (double)Int32.Parse(results.Rows[i][2].ToString()) / (double)Int32.Parse(results.Rows[i][1].ToString());
             }
             //get frame size
+            bool afterslicing=false;
             Afterslicing:
-            int H = LCM(t);
+            int H = LCM(tasks.Select(m=>m.t).ToList());
             int f = 0;
             for (int i=H; i > 0; i--) {
-                if (i >= p.Max() && H % i == 0 && i<=t.Min()) {
+                if (i >= tasks.Select(m=>m.p).Max() && H % i == 0 && i<=tasks.Select(m=>m.t).Min()) {
                     f = i;
                     break;
                 }
             }
             //how many frames
-            if (f > 0)
+            if (f > 0|| afterslicing)
             {
                 int f_count = H / f;
                 MessageBox.Show("H:" + H + "\nf:" + f + "\nf_count" + f_count + "\n");
-                List<Tuple<int, string>> mylist = new List<Tuple<int, string>>();
-                //for (int i = 0; i < f_count; i++)
-                //{
-                //    mylist.Add();
-                //}
-                for (int i = 0; i < p.Count; i++) {
-                    int occur = H / d[i];
-                    int rangespertask=f_count / occur;
-                    for (int j = 0; j < f_count; j++) {
-                    
-                    }
+                //chart1.ChartAreas[0].AxisY.IsStartedFromZero = false;
+                chart1.Legends.Clear();
+                chart1.Legends.Add("Timespans");
+                chart1.Legends[0].LegendStyle = LegendStyle.Table;
+                chart1.Legends[0].Docking = Docking.Bottom;
+                chart1.Legends[0].Alignment = StringAlignment.Center;
+                chart1.Legends[0].Title = "Timespans";
+                chart1.Legends[0].BorderColor = Color.Black;
+                //chart1.ChartAreas[0].AxisY.ScaleView.Size = 25;
+                chart1.ChartAreas[0].AxisX.LabelStyle.Format ="";
+                chart1.ChartAreas[0].AxisX.Crossing = 25;
+                chart1.ChartAreas[0].AxisX.MajorGrid.LineColor = Color.White;
+                chart1.ChartAreas[0].BackColor = Color.White;
+                chart1.ChartAreas[0].AxisX.Interval = 1;
+                chart1.ChartAreas[0].AxisX.MinorGrid.LineColor = Color.White;
+                
+                chart1.Series.Clear();
+                ///
+                chart1.ChartAreas[0].AxisY.Minimum = 0;
+                chart1.ChartAreas[0].AxisY.Maximum = H;
+                //chart1.ChartAreas[0].AxisY.Interval= (int)(H / f_count);
+                //chart1.ChartAreas[0].AxisY.IntervalType = DateTimeIntervalType.Number;
+                //chart1.ChartAreas[0].AxisY.MajorGrid.Interval = (int)(H / f_count);
+                //chart1.ChartAreas[0].AxisY.MajorGrid.IntervalType = DateTimeIntervalType.Number;
+                //chart1.ChartAreas[0].AxisY.MinorGrid.Interval = (int)(H / f_count);
+                //chart1.ChartAreas[0].AxisY.MinorGrid.IntervalType = DateTimeIntervalType.Number;
+                //chart1.ChartAreas[0].AxisY.LabelStyle.Interval = (int)(H / f_count);
+                //chart1.ChartAreas[0].AxisY.LabelStyle.IntervalType = DateTimeIntervalType.Number;
+                ////chart1.ChartAreas[0].AxisY.IntervalType = DateTimeIntervalType.Milliseconds;
+                //chart1.ChartAreas[0].RecalculateAxesScale();
+                chart1.ChartAreas[0].AxisX.Interval = 1;
+                string seriesname;
+                List<int> timeline = new List<int>();
+                List<int> timeline2 = new List<int>();
+                for (int i= 0; i<f_count; i++){
+                    timeline.Add(i*H/f_count);
+                    timeline2.Add(i * H / f_count);
                 }
+                
+                foreach (task mytask in tasks) {
+                    int count = H/mytask.d;
+                    seriesname = Convert.ToString(mytask.name);
+                    //chart1.Series[seriesname].
+                    //chart1.ChartAreas[0].AxisY.Interval = 25;
+                    chart1.Series.Add(seriesname);
+                    chart1.Series[seriesname].ChartType = SeriesChartType.RangeBar;
+                    chart1.Series[seriesname].YValuesPerPoint = 2;
+                    chart1.Series[seriesname]["DrawSideBySide"] = "false";
+                    chart1.Series[seriesname].ToolTip = seriesname;
+                    chart1.Series[seriesname].YValueType = ChartValueType.Int32;
+                    chart1.Series[seriesname].YAxisType = AxisType.Secondary;
+                    bool mystop=true;
+                    int newmin=0, newmax=(f_count/count)-1;
+                    List<double> xValues = new List<double>();
+                    List<double> yValues = new List<double>();
+                    for (int i = 0; i < f_count; i++)
+                    {
+                        int newi = 0;
+                        if (!mystop&&i<=newmax&&i>=newmin) {
+                            mystop = true;
+                            newi++;
+                        }
+                        if (mystop)
+                        {
+                            if (timeline[i] + mytask.p <= timeline2[i]+ (H / f_count))
+                            {
+                                //chart
+                                chart1.Series[seriesname].Points.AddXY("timeline", timeline[i], timeline[i] + mytask.p);
+                                chart1.Series[seriesname].Points[chart1.Series[seriesname].Points.Count-1].XValue = 1;
+                                //chart1.Series[seriesname].YAxisType = AxisType.Secondary;
+                                timeline[i] = timeline[i] + mytask.p;
+                                mystop = false;
+                                newmax = newmax+ (f_count / count);
+                                newmin = newmin + (f_count / count);
+                            }
+                            else
+                            {
+                                //next
+                            }
+                        }
+                    }
 
-
-
-
-
-
+                }
 
             }
             else {
                 //tasks needs to be sliced
-                for (int j = 0; j < p.Count; j++)
+                for (int j = 0; j < tasks.Count; j++)
                 {
-                    if (p[j] > t.Min()) {
-                        //task is bigger than min deadline so needs to be sliced
-                        int duration = p[j];//np 10 a max 4 
-                        p[j] = t.Min();
-                        duration = duration - p[j];
-                        int addval = duration<=t.Min()?duration:t.Min();
-                        while (addval > 0) {
-                            t.Add(t[j]);
-                            p.Add(addval);
-                            d.Add(t[j]);
-                            addval = duration - addval <= t.Min() ? duration - addval : t.Min();
-                            duration -= t.Min();
+                    foreach (task mytask in tasks) {
+                        if (mytask.t > tasks.Max(m => m.p)) { 
 
                         }
                     }
                 }
+                afterslicing = true;
                 goto Afterslicing;
             }
         

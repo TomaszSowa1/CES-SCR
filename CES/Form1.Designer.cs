@@ -82,7 +82,7 @@ namespace CES
             series1.Legend = "Legend1";
             series1.Name = "Series1";
             this.chart1.Series.Add(series1);
-            this.chart1.Size = new System.Drawing.Size(1175, 300);
+            this.chart1.Size = new System.Drawing.Size(1374, 300);
             this.chart1.TabIndex = 4;
             this.chart1.Text = "chart1";
             // 
@@ -90,7 +90,7 @@ namespace CES
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1210, 792);
+            this.ClientSize = new System.Drawing.Size(1466, 792);
             this.Controls.Add(this.chart1);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.dataGridView1);
